@@ -5,21 +5,35 @@ Deploy static sites, Vite apps, and Next.js apps to a live URL with a single API
 **API:** `https://api.host.neynar.app`
 **Deployed sites:** `https://{project-name}.host.neynar.app`
 
-## Install as an Agent Skill
+## Install
 
-### Claude Code
+### For all your projects (personal skill)
 
 ```bash
-claude /install-skill https://github.com/neynarxyz/neynar-deploy
+git clone https://github.com/neynarxyz/neynar-deploy.git ~/.claude/skills/neynar-deploy
 ```
 
-### Manual (any MCP-compatible agent)
+Or without git:
 
-Copy the `SKILL.md` file from this repo into your project's `.claude/skills/` directory, or add it to your agent's skill search path.
+```bash
+mkdir -p ~/.claude/skills/neynar-deploy
+curl -o ~/.claude/skills/neynar-deploy/SKILL.md \
+  https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
+```
 
-### MCP Server
+### For a single project
 
-If your agent supports MCP, connect directly:
+```bash
+mkdir -p .claude/skills/neynar-deploy
+curl -o .claude/skills/neynar-deploy/SKILL.md \
+  https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
+```
+
+Commit `.claude/skills/` to your repo so everyone on the team gets it.
+
+### As an MCP server
+
+If your agent supports MCP, connect directly instead of using the skill file:
 
 ```json
 {
