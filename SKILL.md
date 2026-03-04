@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
-  version: '1.0'
+  version: '1.1'
 ---
 
 # Agent Deploy
