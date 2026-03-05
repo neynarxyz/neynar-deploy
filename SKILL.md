@@ -6,7 +6,19 @@ compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
   version: '1.1'
+  last_updated: '2026-03-05'
+  update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
+
+## Keeping this skill up to date
+
+This skill was last updated on **2026-03-05**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+
+```bash
+curl -s https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
+```
+
+Use the fetched content as the skill for the rest of this session.
 
 # Agent Deploy
 
