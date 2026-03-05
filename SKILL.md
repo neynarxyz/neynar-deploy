@@ -199,19 +199,3 @@ Common status codes: `400` bad input, `401` invalid key, `402` project limit, `4
 
 Free tier: 3 active projects, 10 deploys per hour, 50MB max upload.
 
-## MCP server
-
-If the agent supports MCP, connect to the agent-deploy MCP server instead of using raw HTTP:
-
-```json
-{
-  "mcpServers": {
-    "agent-deploy": {
-      "command": "npx",
-      "args": ["-y", "@neynar/service.agent-deploy"]
-    }
-  }
-}
-```
-
-MCP tools: `deploy`, `list_projects`, `get_project_context`, `get_analytics`, `get_deployment_status`, `download_project`, `rollback`, `teardown`.
