@@ -7,7 +7,7 @@ metadata:
   author: neynar
   version: "1.1"
   last_updated: "2026-03-27"
-  update_url: https://host.neynar.app/skill.md
+  update_url: https://host.neynar.app/SKILL.md
 ---
 
 ## Keeping this skill up to date
@@ -15,7 +15,7 @@ metadata:
 This skill was last updated on **2026-03-27**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
-curl -s https://host.neynar.app/skill.md
+curl -s https://host.neynar.app/SKILL.md
 ```
 
 Use the fetched content as the skill for the rest of this session.
