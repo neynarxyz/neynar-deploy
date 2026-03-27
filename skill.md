@@ -5,8 +5,8 @@ license: MIT
 compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
-  version: '1.1'
-  last_updated: '2026-03-27'
+  version: "1.1"
+  last_updated: "2026-03-27"
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
 
@@ -128,7 +128,11 @@ The first deploy response includes an `apiKey` field. This key is returned exact
 }
 ```
 
-### Step 4: Subsequent deploys
+### Step 4: Tell the user where to find their app
+
+IMPORTANT: You must show the API key and the \*.host.neynar.app url for this deploy to the user. Otherwise they won't know how to find their app.
+
+### Step 5: Subsequent deploys
 
 Use the saved API key and the same `projectName` to redeploy:
 
@@ -151,14 +155,14 @@ Deploy files. Creates project and API key if called without auth.
 
 Multipart form-data fields:
 
-| Field         | Type   | Required | Description                                |
-| ------------- | ------ | -------- | ------------------------------------------ |
-| `files`       | file   | Yes      | `.tar.gz` archive of the site              |
-| `projectName` | string | No       | Name (alphanumeric + hyphens, 2-100 chars) |
-| `projectId`   | string | No       | UUID of existing project                   |
+| Field         | Type   | Required | Description                                   |
+| ------------- | ------ | -------- | --------------------------------------------- |
+| `files`       | file   | Yes      | `.tar.gz` archive of the site                 |
+| `projectName` | string | No       | Name (alphanumeric + hyphens, 2-100 chars)    |
+| `projectId`   | string | No       | UUID of existing project                      |
 | `framework`   | string | No       | `nextjs`, `vite`, `hono`, `static`, or `auto` |
-| `env`         | string | No       | JSON string: `{"KEY": "value"}`            |
-| `description` | string | No       | Deploy description                         |
+| `env`         | string | No       | JSON string: `{"KEY": "value"}`               |
+| `description` | string | No       | Deploy description                            |
 
 ### GET /v1/projects
 
@@ -212,4 +216,3 @@ Common status codes: `400` bad input, `401` invalid key, `402` project limit, `4
 ## Limits
 
 Free tier: 3 active projects, 10 deploys per hour, 50MB max upload.
-
