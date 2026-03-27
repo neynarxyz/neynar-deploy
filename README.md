@@ -1,6 +1,6 @@
 # neynar-deploy
 
-Deploy static sites, Vite apps, and Next.js apps to a live URL with a single API call. Built-in versioning with instant rollback -- no git required.
+Deploy static sites, Vite apps, Next.js apps, and Hono apps to a live URL with a single API call. Built-in versioning with instant rollback -- no git required.
 
 **API:** `https://api.host.neynar.app`
 **Deployed sites:** `https://{project-name}.host.neynar.app`
