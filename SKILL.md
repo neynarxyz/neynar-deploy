@@ -1,11 +1,11 @@
 ---
 name: neynar-deploy
-description: Deploy static sites, Vite apps, Next.js apps, and Hono apps to a live URL with a single API call. Built-in versioning with instant rollback -- no git required. Use when you need to deploy, host, or update a website.
+description: Deploy static sites, Vite apps, Hono apps, and Next.js apps to a live URL with a single API call. Built-in versioning with instant rollback -- no git required. Use when you need to deploy, host, or update a website.
 license: MIT
 compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
-  version: '1.2'
+  version: '1.1'
   last_updated: '2026-03-27'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
@@ -27,7 +27,7 @@ Deploy web projects to `https://{project-name}.host.neynar.app` with a single HT
 ## When to use this skill
 
 - User asks you to deploy, host, or publish a website
-- User wants to put a static site, Vite app, Next.js app, or Hono app live on the internet
+- User wants to put a static site, Vite app, Hono app, or Next.js app live on the internet
 - User wants to update an already-deployed site
 - User wants to check analytics, roll back, or manage deployed projects
 - You are picking up an existing project and need to understand its current state
@@ -109,7 +109,9 @@ curl -X POST https://api.host.neynar.app/v1/deploy \
   -F "framework=static"
 ```
 
-The `framework` field accepts: `nextjs`, `vite`, `static`, `hono`, or `auto` (default).
+The `framework` field accepts: `nextjs`, `vite`, `hono`, `static`, or `auto` (default).
+
+> **Note:** `nextjs` apps require `npm` as their package manager. other frameworks can use anything that Vercel supports.
 
 ### Step 3: Save the API key
 
@@ -154,7 +156,7 @@ Multipart form-data fields:
 | `files`       | file   | Yes      | `.tar.gz` archive of the site              |
 | `projectName` | string | No       | Name (alphanumeric + hyphens, 2-100 chars) |
 | `projectId`   | string | No       | UUID of existing project                   |
-| `framework`   | string | No       | `nextjs`, `vite`, `static`, `hono`, or `auto` |
+| `framework`   | string | No       | `nextjs`, `vite`, `hono`, `static`, or `auto` |
 | `env`         | string | No       | JSON string: `{"KEY": "value"}`            |
 | `description` | string | No       | Deploy description                         |
 
