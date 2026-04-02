@@ -6,14 +6,14 @@ compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
   version: '1.1'
-  last_updated: '2026-04-01'
+  last_updated: '2026-04-02'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
 
 ## Keeping this skill up to date
 
 <!-- prettier-ignore -->
-This skill was last updated on **2026-04-01**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+This skill was last updated on **2026-04-02**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
 curl -s https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
@@ -141,11 +141,14 @@ Check `deployStatus` to know if the site is live yet:
 
 ### Step 4: Wait for the build to finish
 
-If `deployStatus` is `building`, poll the status endpoint every 5 seconds until it becomes `ready` or `error`:
+If `deployStatus` is `building`, poll the status endpoint every 5 seconds until it becomes `ready` or `error`.
+
+**Note:** The deploy response (Step 3) has `deployStatus` at the top level. The status endpoint below nests it under `deployment.deployStatus`. Use the correct path when polling:
 
 ```bash
 curl -s https://api.host.neynar.app/v1/projects/<projectId>/deploy/<deploymentId> \
-  -H "Authorization: Bearer <api-key>"
+  -H "Authorization: Bearer <api-key>" \
+  | jq -r '.deployment.deployStatus'
 ```
 
 Response when build succeeds:
