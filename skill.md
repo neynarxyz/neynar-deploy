@@ -5,15 +5,15 @@ license: MIT
 compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
-  version: '1.1'
-  last_updated: '2026-04-02'
+  version: '1.2'
+  last_updated: '2026-04-03'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
 
 ## Keeping this skill up to date
 
 <!-- prettier-ignore -->
-This skill was last updated on **2026-04-02**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+This skill was last updated on **2026-04-03**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
 curl -s https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
@@ -91,10 +91,10 @@ This gives you everything you need in one call: what's deployed, what changed, h
 1. Create a `.tar.gz` archive of the project directory
 2. POST it to `https://api.host.neynar.app/v1/deploy`
 3. On first deploy, an API key is returned -- save it for future requests
-4. Check the `deployStatus` in the response:
-   - `ready` -- site is live at the returned URL
-   - `building` -- build is in progress, poll `GET /v1/projects/:projectId/deploy/:deploymentId` until `ready` or `error`
-   - `error` -- build failed, check the status endpoint for `buildLogs`
+4. Check `success` and `deployStatus` in the response:
+   - `success: true, deployStatus: "ready"` -- site is live at the returned URL
+   - `success: true, deployStatus: "building"` -- build is in progress, poll `GET /v1/projects/:projectId/deploy/:deploymentId` until `ready` or `error`
+   - `success: false, deployStatus: "error"` -- build failed; `error` contains a summary and `buildLogs` has the last 50 lines of build output
 
 ## How to deploy
 
@@ -121,11 +121,13 @@ The `framework` field accepts: `nextjs`, `vite`, `hono`, `static`, or `auto` (de
 
 The first deploy response includes an `apiKey` field. This key is returned exactly once. Save it to a `.agentdeploy` file or environment variable for subsequent requests.
 
-Check `deployStatus` to know if the site is live yet:
+Check `success` and `deployStatus` to know if the site is live yet:
 
-- `ready` -- site is live, no further action needed
-- `building` -- build in progress, continue to Step 4
-- `error` -- build failed, continue to Step 4 to get logs
+- `success: true, deployStatus: "ready"` -- site is live, no further action needed
+- `success: true, deployStatus: "building"` -- build in progress, continue to Step 4
+- `success: false, deployStatus: "error"` -- build failed; read `error` for a summary and `buildLogs` for the last 50 lines of build output
+
+Response when build is in progress:
 
 ```json
 {
@@ -136,6 +138,26 @@ Check `deployStatus` to know if the site is live yet:
   "deployStatus": "building",
   "url": "https://my-site.host.neynar.app",
   "analyticsUrl": "https://api.host.neynar.app/analytics/<secret>"
+}
+```
+
+Response when build fails immediately:
+
+```json
+{
+  "success": false,
+  "projectId": "uuid",
+  "apiKey": "uuid",
+  "deploymentId": "uuid",
+  "deployStatus": "error",
+  "url": "https://my-site.host.neynar.app",
+  "analyticsUrl": "https://api.host.neynar.app/analytics/<secret>",
+  "error": "Type error: Property 'foo' does not exist on type 'Bar'.",
+  "buildLogs": [
+    "Installing dependencies...",
+    "Building...",
+    "Type error: Property 'foo' does not exist on type 'Bar'."
+  ]
 }
 ```
 
@@ -166,7 +188,7 @@ Response when build succeeds:
 }
 ```
 
-Response when build fails (includes build logs so you can fix the error):
+Response when build fails (may include `errorSummary` when available, so you may not need to parse the full log array):
 
 ```json
 {
@@ -177,6 +199,7 @@ Response when build fails (includes build logs so you can fix the error):
     "deployStatus": "error",
     "url": null,
     "completedAt": "2025-03-02T12:35:30.000Z",
+    "errorSummary": "Type error: Property 'foo' does not exist on type 'Bar'.",
     "buildLogs": [
       "Installing dependencies...",
       "npm warn deprecated some-pkg@1.0.0",
@@ -236,19 +259,19 @@ Delete a project and its Vercel resources.
 
 ### POST /v1/projects/:projectId/deploy
 
-Deploy new version to existing project. Same multipart fields as `POST /v1/deploy` except `projectName` and `projectId`. Response includes `deployStatus` -- poll the status endpoint if `building`.
+Deploy new version to existing project. Same multipart fields as `POST /v1/deploy` except `projectName` and `projectId`. Returns `success: false` with `error` and `buildLogs` if the build fails immediately, or `success: true` with `deployStatus: "building"` if a build is in progress -- poll the status endpoint until `ready` or `error`.
 
 ### GET /v1/projects/:projectId/deploy/:deploymentId
 
 Check real-time deployment status. Queries the build system for the latest state.
 
 - `deployStatus` is one of: `pending`, `building`, `ready`, `error`
-- When `deployStatus` is `error`, the response includes a `buildLogs` array with the build output so you can diagnose and fix the issue
+- When `deployStatus` is `error`, the response may include `errorSummary` (a single-line summary of the failure) and a `buildLogs` array with the last 50 lines of build output
 - Poll this endpoint every 5 seconds after deploying until `deployStatus` is `ready` or `error`
 
 ### POST /v1/projects/:projectId/rollback
 
-Roll back to a previous version. Body: `{ "version": <number> }`. Response includes `deployStatus` -- poll the status endpoint if `building`.
+Roll back to a previous version. Body: `{ "version": <number> }`. Returns `success: false` with `error` and `buildLogs` if the build fails, or `success: true` with `deployStatus` -- poll the status endpoint if `building`.
 
 ### GET /v1/projects/:projectId/analytics?period=7d
 
