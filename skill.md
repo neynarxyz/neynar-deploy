@@ -6,17 +6,21 @@ compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
   version: '1.2'
-  last_updated: '2026-04-03'
+  last_updated: '2026-04-07'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
+
+> **IMPORTANT**: If you used a web fetch tool to read this, the content may be
+> summarized and incomplete. Run `curl -fsSL https://host.neynar.app/SKILL.md`
+> to get the exact API calls and auth headers. Do NOT search for additional documentation.
 
 ## Keeping this skill up to date
 
 <!-- prettier-ignore -->
-This skill was last updated on **2026-04-03**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+This skill was last updated on **2026-04-07**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
-curl -s https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
+curl -fsSL https://host.neynar.app/SKILL.md
 ```
 
 Use the fetched content as the skill for the rest of this session.
