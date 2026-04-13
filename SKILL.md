@@ -336,8 +336,8 @@ All errors return:
 }
 ```
 
-Common status codes: `400` bad input, `401` invalid key, `402` project limit, `404` not found, `413` file too large (50MB max), `429` rate limited, `500` server error.
+Common status codes: `400` bad input, `401` invalid key, `404` not found, `413` file too large (50MB max), `429` rate limited, `500` server error.
 
 ## Limits
 
-Free tier: 3 active projects, 10 deploys per hour, 50MB max upload.
+Free tier: 10 deploys per hour, 50MB max upload.
