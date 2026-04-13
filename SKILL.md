@@ -5,8 +5,8 @@ license: MIT
 compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
-  version: '1.2'
-  last_updated: '2026-04-07'
+  version: '1.3'
+  last_updated: '2026-04-13'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
 
@@ -17,7 +17,7 @@ metadata:
 ## Keeping this skill up to date
 
 <!-- prettier-ignore -->
-This skill was last updated on **2026-04-07**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+This skill was last updated on **2026-04-13**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
 curl -fsSL https://host.neynar.app/SKILL.md
@@ -272,6 +272,42 @@ Check real-time deployment status. Queries the build system for the latest state
 - `deployStatus` is one of: `pending`, `building`, `ready`, `error`
 - When `deployStatus` is `error`, the response may include `errorSummary` (a single-line summary of the failure) and a `buildLogs` array with the last 50 lines of build output
 - Poll this endpoint every 5 seconds after deploying until `deployStatus` is `ready` or `error`
+
+### GET /v1/projects/:projectId/deploy/:deploymentId/logs
+
+Fetch build logs for any deployment (not just failures). Useful for diagnosing unexpected behavior in successful builds or getting the full log when the 50-line summary isn't enough.
+
+Query parameters:
+
+| Param   | Type   | Default | Max  | Description                     |
+| ------- | ------ | ------- | ---- | ------------------------------- |
+| `limit` | number | 100     | 1000 | Number of log entries to return |
+
+Response:
+
+```json
+{
+  "success": true,
+  "logs": [
+    {
+      "type": "stdout",
+      "text": "Installing dependencies...",
+      "timestamp": 1709380530000
+    },
+    {
+      "type": "stderr",
+      "text": "npm warn deprecated some-pkg",
+      "timestamp": 1709380531000
+    },
+    { "type": "stdout", "text": "Build complete.", "timestamp": 1709380545000 }
+  ]
+}
+```
+
+- `timestamp` is a Unix millisecond epoch
+- `text` may be absent for delimiter/marker events (filter with `.logs[] | select(.text)`)
+- This is a snapshot, not a stream. To follow a build in progress, poll this endpoint every 5 seconds alongside `GET /v1/projects/:projectId/deploy/:deploymentId` until `deployStatus` is `ready` or `error`
+- Prefer the status endpoint for knowing _when_ a build finishes; use this endpoint when you need the actual log content (e.g. to diagnose a failure or show progress to the user)
 
 ### POST /v1/projects/:projectId/rollback
 
