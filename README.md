@@ -71,7 +71,7 @@ The response includes a live URL and an API key for subsequent deploys.
 - **Project context** -- structured deploy history and analytics in one API call
 - **Custom domains** -- `{project-name}.host.neynar.app` automatically
 - **Analytics** -- pageviews, unique visitors, top pages, referrers
-- **Free tier** -- 3 projects, 10 deploys/hour, 50MB max upload
+- **Free tier** -- 10 deploys/hour, 50MB max upload
 
 ## Full API Reference
 
