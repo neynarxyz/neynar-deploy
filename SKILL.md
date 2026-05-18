@@ -5,8 +5,8 @@ license: MIT
 compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
-  version: '1.3'
-  last_updated: '2026-04-13'
+  version: '1.6'
+  last_updated: '2026-05-18'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
 
@@ -17,7 +17,7 @@ metadata:
 ## Keeping this skill up to date
 
 <!-- prettier-ignore -->
-This skill was last updated on **2026-04-13**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+This skill was last updated on **2026-05-18**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
 curl -fsSL https://host.neynar.app/SKILL.md
@@ -43,8 +43,8 @@ Every deploy automatically increments a version number. You do not need git, bra
 
 - Each deploy returns a `version` number and `deploymentId`
 - `GET /v1/projects/:projectId` returns the complete deploy history with version numbers, descriptions, timestamps, and deployment IDs
-- Roll back to any previous version with `POST /v1/projects/:projectId/rollback` -- this creates a new version from the old source files
-- Download the source archive of any deployment with `GET /v1/projects/:projectId/files`
+- Roll back to any previous successful version with `POST /v1/projects/:projectId/rollback` when that version has a stored source archive
+- Download the latest source archive with `GET /v1/projects/:projectId/files`
 
 This means you can deploy freely, knowing you can always inspect what changed and revert if something breaks.
 
@@ -65,19 +65,22 @@ When picking up an existing project (or resuming work across sessions), call `GE
         "version": 3,
         "description": "Added contact page",
         "createdAt": "...",
-        "deploymentId": "uuid"
+        "deploymentId": "uuid",
+        "internalUrl": "https://my-site-xyz789.vercel.app"
       },
       {
         "version": 2,
         "description": "Fixed hero image",
         "createdAt": "...",
-        "deploymentId": "uuid"
+        "deploymentId": "uuid",
+        "internalUrl": "https://my-site-def456.vercel.app"
       },
       {
         "version": 1,
         "description": "Initial deploy",
         "createdAt": "...",
-        "deploymentId": "uuid"
+        "deploymentId": "uuid",
+        "internalUrl": "https://my-site-abc123.vercel.app"
       }
     ],
     "analyticsSummary": {
@@ -90,15 +93,46 @@ When picking up an existing project (or resuming work across sessions), call `GE
 
 This gives you everything you need in one call: what's deployed, what changed, how it's performing, and the live URL. Use the `description` field on each deploy to leave notes for your future self or other agents about what changed.
 
+- `currentUrl` is the canonical public URL — show this to the user when reporting on the project.
+- Each `deployHistory[].internalUrl` is the immutable Vercel URL for that specific version. It exists so the user can compare versions side-by-side **when they ask for it**. Do not surface these URLs unprompted — see [Reporting URLs](#reporting-urls-to-the-user--mandatory).
+
 ## Quick deploy flow
 
 1. Create a `.tar.gz` archive of the project directory
 2. POST it to `https://api.host.neynar.app/v1/deploy`
 3. On first deploy, an API key is returned -- save it for future requests
 4. Check `success` and `deployStatus` in the response:
-   - `success: true, deployStatus: "ready"` -- site is live at the returned URL
+   - `success: true, deployStatus: "ready"` -- site is live at the canonical public URL
    - `success: true, deployStatus: "building"` -- build is in progress, poll `GET /v1/projects/:projectId/deploy/:deploymentId` until `ready` or `error`
    - `success: false, deployStatus: "error"` -- build failed; `error` contains a summary and `buildLogs` has the last 50 lines of build output
+
+## Reporting URLs to the user — **MANDATORY**
+
+This is the single most common mistake when using this skill. Read carefully.
+
+**Every API response has two URL fields:**
+
+| Field                | What it is                                                                            | Show to user?                                                           |
+| -------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `url` / `currentUrl` | Canonical public URL: `https://{projectName}.host.neynar.app` (always project-scoped) | **YES — this is the only URL you ever surface to the user by default.** |
+| `internalUrl`        | Internal per-deployment Vercel URL (e.g. `https://...vercel.app`, immutable, infra)   | **NO — never. Treat it as an implementation detail.**                   |
+
+### Rules (non-negotiable)
+
+1. When telling the user a site is live, updated, rolled back, or in any way reporting a deployed URL, you **MUST** use `url` / `currentUrl` (the `.host.neynar.app` value). Never substitute `internalUrl` for it. Never paraphrase it. Never paste a `*.vercel.app` URL into a user-facing message.
+2. If you don't have `url` in the current response (e.g. you only have `projectName`), construct it as `https://{projectName}.host.neynar.app`. Do not fetch `internalUrl` as a substitute.
+3. The only time you may show `internalUrl` to the user is when the **human explicitly asks** to compare versions, inspect a historical artifact, or debug a specific deployment by its immutable URL. Even then, label it clearly as "internal deployment URL for v{N}" so the user understands it isn't the live site URL.
+4. If a future API response surprises you (e.g. an unexpected field, a missing `url`), **stop and ask the user** before reporting anything. Do not invent a URL or substitute the wrong field.
+
+### Why this matters
+
+The canonical URL is project-scoped — it always points to whatever's currently live for that project. The `internalUrl` is deployment-scoped, immutable, and infrastructure-internal. Surfacing it to the user leaks Vercel implementation details, breaks the user's mental model of "my site at `myname.host.neynar.app`", and is confusing if the project is later rebuilt or migrated.
+
+When you redeploy, the canonical URL stays the same. The `internalUrl` changes every time. Users want stability — give them the canonical URL.
+
+### Quick check before sending
+
+Before any message to the user that contains a URL, ask yourself: **does it end in `.host.neynar.app`?** If not, you are about to make the mistake this section warns against.
 
 ## How to deploy
 
@@ -119,7 +153,7 @@ curl -X POST https://api.host.neynar.app/v1/deploy \
 
 The `framework` field accepts: `nextjs`, `vite`, `hono`, `static`, or `auto` (default).
 
-> **Note:** `nextjs` apps require `npm` as their package manager. other frameworks can use anything that Vercel supports.
+> **Note:** `nextjs` apps require `npm` as their package manager. Other frameworks can use anything that Vercel supports.
 
 ### Step 3: Save the API key
 
@@ -139,6 +173,7 @@ Response when build is in progress:
   "projectId": "uuid",
   "apiKey": "uuid",
   "deploymentId": "uuid",
+  "version": 1,
   "deployStatus": "building",
   "url": "https://my-site.host.neynar.app",
   "analyticsUrl": "https://api.host.neynar.app/analytics/<secret>"
@@ -153,6 +188,7 @@ Response when build fails immediately:
   "projectId": "uuid",
   "apiKey": "uuid",
   "deploymentId": "uuid",
+  "version": 1,
   "deployStatus": "error",
   "url": "https://my-site.host.neynar.app",
   "analyticsUrl": "https://api.host.neynar.app/analytics/<secret>",
@@ -187,10 +223,15 @@ Response when build succeeds:
     "version": 1,
     "deployStatus": "ready",
     "url": "https://my-site.host.neynar.app",
+    "internalUrl": "https://my-site-abc123.vercel.app",
+    "description": "Initial deploy",
+    "createdAt": "2025-03-02T12:35:00.000Z",
     "completedAt": "2025-03-02T12:35:30.000Z"
   }
 }
 ```
+
+> `url` is the canonical URL you report to the user. `internalUrl` is internal — see [Reporting URLs to the user](#reporting-urls-to-the-user--mandatory).
 
 Response when build fails (may include `errorSummary` when available, so you may not need to parse the full log array):
 
@@ -201,7 +242,8 @@ Response when build fails (may include `errorSummary` when available, so you may
     "deploymentId": "uuid",
     "version": 1,
     "deployStatus": "error",
-    "url": null,
+    "url": "https://my-site.host.neynar.app",
+    "internalUrl": "https://my-site-abc123.vercel.app",
     "completedAt": "2025-03-02T12:35:30.000Z",
     "errorSummary": "Type error: Property 'foo' does not exist on type 'Bar'.",
     "buildLogs": [
@@ -215,9 +257,17 @@ Response when build fails (may include `errorSummary` when available, so you may
 }
 ```
 
-**Important:** Static sites (`framework=static`) return `deployStatus: ready` immediately -- no polling needed. Only `nextjs`, `vite`, and `hono` frameworks require a build step.
+**Important:** Static sites (`framework=static`) often return `deployStatus: ready` immediately. If any deploy returns `building` or `pending`, poll the status endpoint until it becomes `ready` or `error`.
 
-### Step 5: Subsequent deploys
+### Step 5: Verify the canonical public URL
+
+Before telling the user the site is live, verify the canonical `.host.neynar.app` URL is serving. **This is the URL you report to the user — not the `internalUrl` field.**
+
+```bash
+curl -I https://my-site.host.neynar.app
+```
+
+### Step 6: Subsequent deploys
 
 Use the saved API key and the same `projectName` to redeploy:
 
@@ -270,6 +320,8 @@ Deploy new version to existing project. Same multipart fields as `POST /v1/deplo
 Check real-time deployment status. Queries the build system for the latest state.
 
 - `deployStatus` is one of: `pending`, `building`, `ready`, `error`
+- `deployment.url` is the canonical `.host.neynar.app` URL — **this is the URL you show the user**
+- `deployment.internalUrl` is the internal Vercel URL for this specific deployment — **only surface this if the user explicitly asks** (e.g. to compare versions); see [Reporting URLs](#reporting-urls-to-the-user--mandatory)
 - When `deployStatus` is `error`, the response may include `errorSummary` (a single-line summary of the failure) and a `buildLogs` array with the last 50 lines of build output
 - Poll this endpoint every 5 seconds after deploying until `deployStatus` is `ready` or `error`
 
@@ -311,7 +363,7 @@ Response:
 
 ### POST /v1/projects/:projectId/rollback
 
-Roll back to a previous version. Body: `{ "version": <number> }`. Returns `success: false` with `error` and `buildLogs` if the build fails, or `success: true` with `deployStatus` -- poll the status endpoint if `building`.
+Roll back to a previous successful version that has a stored source archive. Body: `{ "version": <number> }`. Returns `success: false` with `error` and `buildLogs` if the build fails, or `success: true` with `deployStatus` -- poll the status endpoint if `building`.
 
 ### GET /v1/projects/:projectId/analytics?period=7d
 
@@ -319,7 +371,7 @@ Get analytics. Period: `1d`, `7d`, or `30d`.
 
 ### GET /v1/projects/:projectId/files
 
-Get download URL for latest source files.
+Get download URL for the latest source files.
 
 ### GET /v1/billing/tier
 
