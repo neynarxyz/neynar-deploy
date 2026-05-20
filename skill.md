@@ -6,7 +6,7 @@ compatibility: Requires network access to https://api.host.neynar.app
 metadata:
   author: neynar
   version: '1.6'
-  last_updated: '2026-05-19'
+  last_updated: '2026-05-20'
   update_url: https://raw.githubusercontent.com/neynarxyz/neynar-deploy/main/SKILL.md
 ---
 
@@ -17,7 +17,7 @@ metadata:
 ## Keeping this skill up to date
 
 <!-- prettier-ignore -->
-This skill was last updated on **2026-05-19**. If that date is more than 7 days ago, fetch the latest version before proceeding:
+This skill was last updated on **2026-05-20**. If that date is more than 7 days ago, fetch the latest version before proceeding:
 
 ```bash
 curl -fsSL https://host.neynar.app/SKILL.md
@@ -392,4 +392,4 @@ Common status codes: `400` bad input, `401` invalid key, `404` not found, `413` 
 
 ## Limits
 
-Free tier: 10 deploys per hour, 50MB max upload.
+Free tier: 20 deploys per hour, 50MB max upload.
